@@ -14,7 +14,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -35,90 +35,79 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
-var _a;
 exports.__esModule = true;
 exports.isCid = exports.isV0CID = exports.pinIpfsCid = exports.putIpfsJson = exports.getIpfsJson = void 0;
+var cid_1 = require("multiformats/cid");
 var debug = require('debug')('dpack');
-var IPFS = require('ipfs-http-client');
-var nodeAddress = '/ip4/127.0.0.1/tcp/5001';
-try {
-    nodeAddress = (_a = process.env["IPFS_RPC_URL"]) !== null && _a !== void 0 ? _a : '/ip4/127.0.0.1/tcp/5001';
-}
-catch (_b) { }
-debug("starting node ".concat(nodeAddress));
-var node = IPFS.create(nodeAddress);
-debug('started node');
-function getIpfsJson(cid) {
-    var e_1, _a;
+var es6loader = require('../es6loader');
+var hnode = null;
+function getHelia() {
     return __awaiter(this, void 0, void 0, function () {
-        var blob, s, utf8decoder, blob_1, blob_1_1, chunk, e_1_1;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var createHelia, fsBlockstore, store;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
-                    if (isV0CID(cid)) {
-                        console.log("\nWARN: Detected a V0 CID string. This warning will become an error very soon.\nPlease repack the pack containing ".concat(cid, "\n"));
-                    }
-                    return [4 /*yield*/, node.cat(cid)];
+                    if (!(hnode === null)) return [3 /*break*/, 4];
+                    return [4 /*yield*/, es6loader.loadModule('helia', 'createHelia')];
                 case 1:
-                    blob = _b.sent();
-                    s = '';
-                    utf8decoder = new TextDecoder();
-                    _b.label = 2;
+                    createHelia = _a.sent();
+                    return [4 /*yield*/, es6loader.loadModule('blockstore-fs', 'FsBlockstore')];
                 case 2:
-                    _b.trys.push([2, 7, 8, 13]);
-                    blob_1 = __asyncValues(blob);
-                    _b.label = 3;
-                case 3: return [4 /*yield*/, blob_1.next()];
-                case 4:
-                    if (!(blob_1_1 = _b.sent(), !blob_1_1.done)) return [3 /*break*/, 6];
-                    chunk = blob_1_1.value;
-                    s += utf8decoder.decode(chunk);
-                    _b.label = 5;
-                case 5: return [3 /*break*/, 3];
-                case 6: return [3 /*break*/, 13];
-                case 7:
-                    e_1_1 = _b.sent();
-                    e_1 = { error: e_1_1 };
-                    return [3 /*break*/, 13];
-                case 8:
-                    _b.trys.push([8, , 11, 12]);
-                    if (!(blob_1_1 && !blob_1_1.done && (_a = blob_1["return"]))) return [3 /*break*/, 10];
-                    return [4 /*yield*/, _a.call(blob_1)];
-                case 9:
-                    _b.sent();
-                    _b.label = 10;
-                case 10: return [3 /*break*/, 12];
-                case 11:
-                    if (e_1) throw e_1.error;
-                    return [7 /*endfinally*/];
-                case 12: return [7 /*endfinally*/];
-                case 13: return [2 /*return*/, JSON.parse(s)];
+                    fsBlockstore = _a.sent();
+                    store = new fsBlockstore('~/.dpack/blockstore');
+                    return [4 /*yield*/, createHelia({ store: store })];
+                case 3:
+                    hnode = _a.sent();
+                    _a.label = 4;
+                case 4: return [2 /*return*/, hnode];
+            }
+        });
+    });
+}
+function getHeliaJson() {
+    return __awaiter(this, void 0, void 0, function () {
+        var heliaJson, helia;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, es6loader.loadModule('@helia/json', 'json')];
+                case 1:
+                    heliaJson = _a.sent();
+                    return [4 /*yield*/, getHelia()];
+                case 2:
+                    helia = _a.sent();
+                    return [2 /*return*/, heliaJson(helia)];
+            }
+        });
+    });
+}
+function getIpfsJson(cid) {
+    return __awaiter(this, void 0, void 0, function () {
+        var heliaJson, cidObject;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, getHeliaJson()];
+                case 1:
+                    heliaJson = _a.sent();
+                    cidObject = typeof cid === 'string' ? cid_1.CID.parse(cid) : cid;
+                    return [4 /*yield*/, heliaJson.get(cidObject)];
+                case 2: return [2 /*return*/, _a.sent()];
             }
         });
     });
 }
 exports.getIpfsJson = getIpfsJson;
 function putIpfsJson(obj, pin) {
-    if (pin === void 0) { pin = false; }
+    if (pin === void 0) { pin = true; }
     return __awaiter(this, void 0, void 0, function () {
-        var str, cid;
+        var heliaJson, cid;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    str = JSON.stringify(obj);
-                    debug("adding ".concat(str));
-                    return [4 /*yield*/, node.add(str, { cidVersion: 1, pin: pin })];
+                case 0: return [4 /*yield*/, getHeliaJson()];
                 case 1:
-                    cid = (_a.sent()).cid;
-                    debug("added ".concat(str));
-                    debug("put ".concat(cid));
+                    heliaJson = _a.sent();
+                    return [4 /*yield*/, heliaJson.add(obj)];
+                case 2:
+                    cid = _a.sent();
                     return [2 /*return*/, cid.toString()];
             }
         });
@@ -127,16 +116,16 @@ function putIpfsJson(obj, pin) {
 exports.putIpfsJson = putIpfsJson;
 function pinIpfsCid(cid) {
     return __awaiter(this, void 0, void 0, function () {
+        var helia, cidObject;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    if (isV0CID(cid)) {
-                        console.log("\nWARN: Detected a V0 CID string. This warning will become an error very soon.\nPlease repack the pack containing ".concat(cid, "\n"));
-                    }
-                    return [4 /*yield*/, node.pin.add(cid)];
+                case 0: return [4 /*yield*/, getHelia()];
                 case 1:
+                    helia = _a.sent();
+                    cidObject = typeof cid === 'string' ? cid_1.CID.parse(cid) : cid;
+                    return [4 /*yield*/, helia.pins.add(cidObject)];
+                case 2:
                     _a.sent();
-                    debug("pinned ".concat(cid));
                     return [2 /*return*/];
             }
         });
@@ -151,7 +140,7 @@ function isV0CID(cidStr) {
 exports.isV0CID = isV0CID;
 function isCid(cidStr) {
     try {
-        IPFS.CID.parse(cidStr);
+        cid_1.CID.parse(cidStr);
         return true;
     }
     catch (_a) {
