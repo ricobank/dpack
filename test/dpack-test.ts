@@ -1,7 +1,7 @@
 import { builder, load } from "../index"
 import { Dapp } from '../src/dapp';
 import { PackBuilder } from '../src/builder';
-import { putIpfsJson } from "../src/ipfs-util"
+import {putIpfsJson, stopHelia} from "../src/ipfs-util"
 import * as pure from '../src/pure'
 
 const debug = require('debug')('dpack:test')
@@ -64,6 +64,10 @@ describe('end to end simple example', ()=>{
                        JSON.stringify(dappFromJams), JSON.stringify(dappFromCID)];
     want((new Set(packStrings)).size).to.equal(1)
   })
+
+  after(async () => {
+    await stopHelia();
+  });
 });
 
 describe('pure api', async ()=>{

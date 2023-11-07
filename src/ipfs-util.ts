@@ -1,4 +1,6 @@
 import {CID} from 'multiformats/cid';
+const os = require('os');
+const path = require('path');
 const debug = require('debug')('dpack')
 const es6loader = require('../es6loader')
 
@@ -8,10 +10,16 @@ async function getHelia() {
   if (hnode === null) {
     const createHelia = await es6loader.loadModule('helia', 'createHelia')
     const fsBlockstore = await es6loader.loadModule('blockstore-fs', 'FsBlockstore')
-    const store = new fsBlockstore('~/.dpack/blockstore')
-    hnode =  await createHelia({store})
+    const storePath = path.join(os.homedir(), '.dpack', 'blockstore');
+    const store = new fsBlockstore(storePath)
+    hnode = await createHelia({blockstore: store})
   }
   return hnode
+}
+
+export async function stopHelia() {
+  const helia = await getHelia()
+  await helia.stop()
 }
 
 async function getHeliaJson() {
@@ -52,3 +60,7 @@ export function isCid (cidStr: string): boolean {
     return false
   }
 }
+
+process.on('beforeExit', async () => {
+  await stopHelia();
+});

@@ -36,14 +36,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.isCid = exports.isV0CID = exports.pinIpfsCid = exports.putIpfsJson = exports.getIpfsJson = void 0;
+exports.isCid = exports.isV0CID = exports.pinIpfsCid = exports.putIpfsJson = exports.getIpfsJson = exports.stopHelia = void 0;
 var cid_1 = require("multiformats/cid");
+var os = require('os');
+var path = require('path');
 var debug = require('debug')('dpack');
 var es6loader = require('../es6loader');
 var hnode = null;
 function getHelia() {
     return __awaiter(this, void 0, void 0, function () {
-        var createHelia, fsBlockstore, store;
+        var createHelia, fsBlockstore, storePath, store;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -54,8 +56,9 @@ function getHelia() {
                     return [4 /*yield*/, es6loader.loadModule('blockstore-fs', 'FsBlockstore')];
                 case 2:
                     fsBlockstore = _a.sent();
-                    store = new fsBlockstore('~/.dpack/blockstore');
-                    return [4 /*yield*/, createHelia({ store: store })];
+                    storePath = path.join(os.homedir(), '.dpack', 'blockstore');
+                    store = new fsBlockstore(storePath);
+                    return [4 /*yield*/, createHelia({ blockstore: store })];
                 case 3:
                     hnode = _a.sent();
                     _a.label = 4;
@@ -64,6 +67,23 @@ function getHelia() {
         });
     });
 }
+function stopHelia() {
+    return __awaiter(this, void 0, void 0, function () {
+        var helia;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, getHelia()];
+                case 1:
+                    helia = _a.sent();
+                    return [4 /*yield*/, helia.stop()];
+                case 2:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.stopHelia = stopHelia;
 function getHeliaJson() {
     return __awaiter(this, void 0, void 0, function () {
         var heliaJson, helia;
@@ -97,7 +117,7 @@ function getIpfsJson(cid) {
 }
 exports.getIpfsJson = getIpfsJson;
 function putIpfsJson(obj, pin) {
-    if (pin === void 0) { pin = true; }
+    if (pin === void 0) { pin = false; }
     return __awaiter(this, void 0, void 0, function () {
         var heliaJson, cid;
         return __generator(this, function (_a) {
@@ -105,7 +125,7 @@ function putIpfsJson(obj, pin) {
                 case 0: return [4 /*yield*/, getHeliaJson()];
                 case 1:
                     heliaJson = _a.sent();
-                    return [4 /*yield*/, heliaJson.add(obj)];
+                    return [4 /*yield*/, heliaJson.add(obj, { pin: pin })];
                 case 2:
                     cid = _a.sent();
                     return [2 /*return*/, cid.toString()];
@@ -148,3 +168,13 @@ function isCid(cidStr) {
     }
 }
 exports.isCid = isCid;
+process.on('beforeExit', function () { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, stopHelia()];
+            case 1:
+                _a.sent();
+                return [2 /*return*/];
+        }
+    });
+}); });
