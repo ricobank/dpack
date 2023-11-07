@@ -26,9 +26,9 @@ export async function getIpfsJson(cid: string | CID): Promise<any> {
   return await heliaJson.get(cidObject);
 }
 
-export async function putIpfsJson(obj: any, pin: boolean = true): Promise<string> {
+export async function putIpfsJson(obj: any, pin: boolean = false): Promise<string> {
   const heliaJson = await getHeliaJson();
-  const cid = await heliaJson.add(obj);
+  const cid = await heliaJson.add(obj, { pin: pin });
   return cid.toString();
 }
 
